@@ -245,35 +245,8 @@ abstract class ApiPlatform extends PlatformInterface {
   /// Server End
 
   /// Search Start
-  Future<SearchFuzzyResult> searchFuzzy(
-    SearchFuzzyType type, {
-    String? filter,
-    List<dynamic>? genres,
-    List<dynamic>? studios,
-    List<dynamic>? keywords,
-    List<dynamic>? mediaCast,
-    List<dynamic>? mediaCrew,
-    bool? watched,
-    bool? favorite,
-    required int offset,
-    required int limit,
-  }) async {
-    final data = await client.post(
-      '/search/fuzzy',
-      data: {
-        'type': type.index,
-        'filter': filter,
-        'genres': genres,
-        'studios': studios,
-        'keywords': keywords,
-        'mediaCast': mediaCast,
-        'mediaCrew': mediaCrew,
-        'watched': watched,
-        'favorite': favorite,
-        'offset': offset,
-        'limit': limit,
-      },
-    );
+  Future<SearchFuzzyResult> searchFuzzy([MediaSearchQuery query = const MediaSearchQuery()]) async {
+    final data = await client.post('/search/fuzzy', data: query.toMap());
     return SearchFuzzyResult.fromJson(data);
   }
 
@@ -320,14 +293,14 @@ abstract class ApiPlatform extends PlatformInterface {
 
   /// Driver Start
   Future<List<DriverAccount>> driverQueryAll() async {
-    final data = await client.get('/driver/query/all');
+    final data = await client.get('/storage/query/all');
     return listFromJson(data, DriverAccount.fromJson);
   }
 
   Stream<dynamic> driverInsert(DriverType type, {String? url, String? username, String? password, String? token}) {
     return streamWithCallback<dynamic, dynamic>(
       client.put(
-        '/driver/insert/cb',
+        '/storage/insert/cb',
         data: {'type': type.index, 'url': url, 'username': username, 'password': password, 'token': token},
       ),
       (data) => data,
@@ -336,16 +309,16 @@ abstract class ApiPlatform extends PlatformInterface {
 
   Future<Map<String, dynamic>> driverSettingQueryById(int id) {
     return client
-        .get<Map<String, dynamic>>('/driver/setting/query/id', queryParameters: {'id': id})
+        .get<Map<String, dynamic>>('/storage/setting/query/id', queryParameters: {'id': id})
         .then((data) => data!);
   }
 
   Future<void> driverSettingUpdateById(int id, Map<String, dynamic> settings) {
-    return client.post('/driver/setting/update/id', data: {'id': id, 'settings': settings});
+    return client.post('/storage/setting/update/id', data: {'id': id, 'settings': settings});
   }
 
   Future<void> driverDeleteById(int id) {
-    return client.delete('/driver/delete/id', data: {'id': id});
+    return client.delete('/storage/delete/id', data: {'id': id});
   }
 
   /// Driver End
@@ -387,10 +360,15 @@ abstract class ApiPlatform extends PlatformInterface {
     );
   }
 
-  Future<List<SearchResult>> movieScraperSearch(dynamic id, String title, {String? language, String? year}) async {
+  Future<List<SearchResult>> movieScraperSearch(
+    dynamic id,
+    String title, {
+    SupportedLanguages? language,
+    String? year,
+  }) async {
     final data = await client.get(
       '/movie/scraper/search',
-      queryParameters: {'id': id, 'title': title, 'year': year, 'language': language},
+      queryParameters: {'id': id, 'title': title, 'year': year, 'language': language?.index},
     );
     return listFromJson(data, SearchResult.fromJson);
   }
@@ -439,10 +417,15 @@ abstract class ApiPlatform extends PlatformInterface {
     );
   }
 
-  Future<List<SearchResult>> tvSeriesScraperSearch(dynamic id, String title, {String? language, String? year}) async {
+  Future<List<SearchResult>> tvSeriesScraperSearch(
+    dynamic id,
+    String title, {
+    SupportedLanguages? language,
+    String? year,
+  }) async {
     final data = await client.get(
       '/tv/series/scraper/search',
-      queryParameters: {'id': id, 'title': title, 'year': year, 'language': language},
+      queryParameters: {'id': id, 'title': title, 'year': year, 'language': language?.index},
     );
     return listFromJson(data, SearchResult.fromJson);
   }
@@ -569,14 +552,14 @@ abstract class ApiPlatform extends PlatformInterface {
     dynamic id, {
     required Duration position,
     required Duration duration,
-    String? eventType,
+    required PlayedStatusUpdateEventType eventType,
     dynamic others,
   }) {
     return client.post(
       '/playedStatus/update',
       data: {
         'type': type.index,
-        'eventType': eventType,
+        'eventType': eventType.index,
         'id': id,
         'position': position.inMilliseconds,
         'duration': duration.inMilliseconds,
@@ -592,11 +575,10 @@ abstract class ApiPlatform extends PlatformInterface {
     );
   }
 
-  Stream<List<NetworkDiagnostics>> networkDiagnostics() {
-    return streamWithCallback<List<NetworkDiagnostics>, List<dynamic>>(
-      client.post('/network/diagnostics/cb'),
-      (data) => data.map((d) => NetworkDiagnostics.fromJson(d)).toList(),
-    );
+  Stream<NetworkDiagnostics> networkDiagnostics() {
+    return streamWithCallback<NetworkDiagnostics, dynamic>(client.post('/network/diagnostics/cb'), (data) {
+      return NetworkDiagnostics.fromJson(data);
+    });
   }
 
   Future<void> setTmdbApiKey(String key) {
@@ -607,7 +589,9 @@ abstract class ApiPlatform extends PlatformInterface {
 
   /// Cast Start
   Stream<List<dynamic>> dlnaDiscover() {
-    return streamWithCallback<List<dynamic>, List<dynamic>>(client.post('/dlna/discover/cb'), (data) => data);
+    return streamWithCallback<List<dynamic>, List<dynamic>>(client.post('/dlna/discover/cb'), (data) {
+      return data;
+    });
   }
 
   Future<void> dlnaSetUri(String id, Uri uri, {String? title, required String playType}) {

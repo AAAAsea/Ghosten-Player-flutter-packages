@@ -13,19 +13,48 @@ class SortConfig {
 }
 
 class MediaSearchQuery {
-  const MediaSearchQuery({this.sort, this.limit, this.offset});
+  const MediaSearchQuery({
+    this.sort,
+    this.direction,
+    this.limit,
+    this.offset,
+    this.watched,
+    this.favorite,
+    this.search,
+    this.genres,
+    this.studios,
+    this.keywords,
+    this.mediaCast,
+    this.mediaCrew,
+  });
 
-  final SortConfig? sort;
+  final SortType? sort;
+  final SortDirection? direction;
   final int? limit;
   final int? offset;
+  final bool? watched;
+  final bool? favorite;
+  final String? search;
+  final List<dynamic>? genres;
+  final List<dynamic>? studios;
+  final List<dynamic>? keywords;
+  final List<dynamic>? mediaCast;
+  final List<dynamic>? mediaCrew;
 
   Map<String, dynamic> toMap() {
     return {
-      'type': sort?.type.index ?? 0,
-      'direction': sort?.direction.index ?? 0,
-      'filter': sort?.filter?.index,
+      'sort': sort?.index ?? 0,
+      'direction': direction?.index ?? 0,
       'limit': limit,
       'offset': offset,
+      'watched': watched,
+      'favorite': favorite,
+      'search': search,
+      'genres': genres,
+      'studios': studios,
+      'keywords': keywords,
+      'media_cast': mediaCast,
+      'media_crew': mediaCrew,
     };
   }
 }
@@ -474,12 +503,11 @@ class SearchResult {
   SearchResult.fromJson(dynamic json)
     : id = json[0],
       title = json[1],
-      originalTitle = json[3],
       type = ScraperType.values.elementAt(json[2]),
+      originalTitle = json[3],
       overview = json[4],
       poster = json[5],
-      airDate = (json[6] as List?)?.cast<int>().toDateTime(),
-      language = json[7];
+      airDate = (json[6] as List?)?.cast<int>().toDateTime();
   final String id;
   final String title;
   final ScraperType type;
@@ -487,7 +515,6 @@ class SearchResult {
   final String? overview;
   final String? poster;
   final DateTime? airDate;
-  final String? language;
 }
 
 class SearchFuzzyResult {

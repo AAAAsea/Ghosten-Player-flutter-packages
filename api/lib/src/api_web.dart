@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 
-import '../api.dart';
 import 'api_platform_interface.dart';
 
 class ApiWeb extends ApiPlatform {
@@ -26,28 +25,8 @@ class ApiWeb extends ApiPlatform {
 
   @override
   Stream<T> streamWithCallback<T, D>(Future<dynamic> future, T Function(D) callback) async* {
-    final resp = await future;
-    if (resp != null) {
-      final sessionId = IdResponse.fromJson(resp).id;
-      loop:
-      while (true) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        final session = await sessionStatus<List<dynamic>>(sessionId);
-        switch (session.status) {
-          case SessionStatus.progressing:
-            final data = deserialize(Uint8List.fromList(session.data?.cast<int>() ?? []));
-            yield callback(data as D);
-          case SessionStatus.finished:
-            break loop;
-          case SessionStatus.failed:
-            throw Exception(session.data);
-          default:
-        }
-      }
-    } else {
-      // ignore: avoid_dynamic_calls
-      throw Exception(resp.error);
-    }
+    final resp = await future as ResponseBody;
+    yield* resp.stream.map((event) => callback(deserialize(event) as D));
   }
 }
 
@@ -64,22 +43,32 @@ class Client extends ApiClient {
       ..interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {
+            final data =
+                (options.method != 'GET' && options.data != null)
+                    ? serialize((options.data as Map<String, dynamic>).values)
+                    : null;
             handler.next(
               options
-                ..headers.putIfAbsent('Content-Type', () => 'application/json')
+                // ..headers.putIfAbsent('Content-Type', () => 'application/msgpack')
                 ..headers.putIfAbsent(
                   'Accept-Language',
                   () => Localizations.localeOf(navigatorKey.currentContext!).languageCode,
                 )
-                ..data =
-                    (options.method != 'GET' && options.data != null)
-                        ? serialize((options.data as Map<String, dynamic>).values)
-                        : null
+                ..responseType =
+                    (options.uri.path == '/dlna/discover/cb' || options.uri.path == '/network/diagnostics/cb')
+                        ? ResponseType.stream
+                        : ResponseType.bytes
+                ..data = data
                 ..queryParameters.removeWhere((_, v) => v == null),
             );
           },
           onResponse: (response, handler) {
-            handler.next(response..data = (response.data as Uint8List).isNotEmpty ? deserialize(response.data!) : null);
+            if (response.requestOptions.responseType == ResponseType.bytes) {
+              final data = (response.data as Uint8List).isNotEmpty ? deserialize(response.data!) : null;
+              handler.next(response..data = data);
+            } else {
+              handler.next(response);
+            }
           },
           onError: (error, handler) {
             handler.reject(switch (error.type) {

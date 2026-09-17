@@ -3,7 +3,7 @@ import '../player.dart';
 abstract class Cast {
 
   const Cast();
-  Stream<List<CastDevice>> discover();
+  Stream<CastDevice> discover();
 }
 
 abstract class CastDevice implements PlayerBaseController {

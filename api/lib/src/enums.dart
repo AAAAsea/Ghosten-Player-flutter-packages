@@ -44,6 +44,8 @@ enum SessionStatus { created, progressing, data, finished, failed }
 // ignore: unused_field
 enum SortType { _default, title, airDate, createAt, lastPlayedTime }
 
+enum PlayedStatusUpdateEventType { start, stop, progress }
+
 enum SortDirection { asc, desc }
 
 enum FilterType { favorite, exceptFavorite, watched, unwatched }
@@ -62,4 +64,4 @@ enum ScheduleTaskStatus { idle, running, paused, completed, error }
 
 enum ScraperBehavior { skip, chooseFirst, exact }
 
-enum SearchFuzzyType { all, movie, series, episode, cast, crew }
+enum SupportedLanguages { unknown, zhCn, enUs }

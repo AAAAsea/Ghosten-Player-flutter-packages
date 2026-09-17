@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../player.dart';
 import 'player_platform_interface.dart';
@@ -123,164 +124,176 @@ class _PlayerCastState<T> extends State<PlayerCast<T>> {
                                   listenable: showPlaylist,
                                   builder: (context, child) {
                                     return PageTransitionSwitcher(
-                                      transitionBuilder: (child, animation, secondaryAnimation) =>
-                                          FadeThroughTransition(
+                                      transitionBuilder:
+                                          (child, animation, secondaryAnimation) => FadeThroughTransition(
                                             animation: animation,
                                             secondaryAnimation: secondaryAnimation,
                                             fillColor: Colors.transparent,
                                             child: child,
                                           ),
-                                      child: !showPlaylist.value
-                                          ? Column(
-                                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                                              children: [
-                                                Expanded(
-                                                  child: ListenableBuilder(
-                                                    listenable: index,
-                                                    builder: (context, child) => Center(
-                                                      child: _PlayerArtwork(
-                                                        key: ValueKey(currentItem),
-                                                        item: currentItem,
-                                                        isPlaying: isPlaying,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(12),
-                                                  child: ListenableBuilder(
-                                                    listenable: index,
-                                                    builder: (context, _) => Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        if (currentItem.title != null)
-                                                          Text(
-                                                            currentItem.title!,
-                                                            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                                                              fontWeight: FontWeight.bold,
+                                      child:
+                                          !showPlaylist.value
+                                              ? Column(
+                                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                children: [
+                                                  Expanded(
+                                                    child: ListenableBuilder(
+                                                      listenable: index,
+                                                      builder:
+                                                          (context, child) => Center(
+                                                            child: _PlayerArtwork(
+                                                              key: ValueKey(currentItem),
+                                                              item: currentItem,
+                                                              isPlaying: isPlaying,
                                                             ),
-                                                            overflow: TextOverflow.ellipsis,
                                                           ),
-                                                        if (currentItem.description != null)
-                                                          Text(
-                                                            currentItem.description!,
-                                                            style: Theme.of(context).textTheme.bodyLarge,
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                      ],
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            )
-                                          : Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                              child: Scrollbar(
-                                                controller: _scrollController,
-                                                child: ListView.builder(
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(12),
+                                                    child: ListenableBuilder(
+                                                      listenable: index,
+                                                      builder:
+                                                          (context, _) => Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              if (currentItem.title != null)
+                                                                Text(
+                                                                  currentItem.title!,
+                                                                  style: Theme.of(context).textTheme.titleLarge!
+                                                                      .copyWith(fontWeight: FontWeight.bold),
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              if (currentItem.description != null)
+                                                                Text(
+                                                                  currentItem.description!,
+                                                                  style: Theme.of(context).textTheme.bodyLarge,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                            ],
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                              : Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                                child: Scrollbar(
                                                   controller: _scrollController,
-                                                  itemBuilder: (context, index) {
-                                                    if (index == 0) {
-                                                      return ListenableBuilder(
-                                                        listenable: this.index,
-                                                        builder: (context, _) {
-                                                          return Padding(
-                                                            padding: const EdgeInsets.all(16),
-                                                            child: Row(
-                                                              children: [
-                                                                SizedBox(
-                                                                  width: 80,
-                                                                  height: 80,
-                                                                  child: Center(
-                                                                    child: Container(
-                                                                      decoration: BoxDecoration(
-                                                                        borderRadius: const BorderRadius.all(
-                                                                          Radius.circular(6),
+                                                  child: ListView.builder(
+                                                    controller: _scrollController,
+                                                    itemBuilder: (context, index) {
+                                                      if (index == 0) {
+                                                        return ListenableBuilder(
+                                                          listenable: this.index,
+                                                          builder: (context, _) {
+                                                            return Padding(
+                                                              padding: const EdgeInsets.all(16),
+                                                              child: Row(
+                                                                children: [
+                                                                  SizedBox(
+                                                                    width: 80,
+                                                                    height: 80,
+                                                                    child: Center(
+                                                                      child: Container(
+                                                                        decoration: BoxDecoration(
+                                                                          borderRadius: const BorderRadius.all(
+                                                                            Radius.circular(6),
+                                                                          ),
+                                                                          color: Theme.of(context).colorScheme.surface,
                                                                         ),
-                                                                        color: Theme.of(context).colorScheme.surface,
+                                                                        clipBehavior: Clip.antiAlias,
+                                                                        child:
+                                                                            currentItem.poster != null
+                                                                                ? CachedNetworkImage(
+                                                                                  imageUrl: currentItem.poster!,
+                                                                                  fit: BoxFit.cover,
+                                                                                )
+                                                                                : const SizedBox.expand(
+                                                                                  child: Icon(
+                                                                                    Icons.movie_creation_outlined,
+                                                                                  ),
+                                                                                ),
                                                                       ),
-                                                                      clipBehavior: Clip.antiAlias,
-                                                                      child: currentItem.poster != null
-                                                                          ? CachedNetworkImage(
-                                                                              imageUrl: currentItem.poster!,
-                                                                              fit: BoxFit.cover,
-                                                                            )
-                                                                          : const SizedBox.expand(
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(width: 24),
+                                                                  Expanded(
+                                                                    child: Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      children: [
+                                                                        if (currentItem.title != null)
+                                                                          Text(
+                                                                            currentItem.title!,
+                                                                            style: Theme.of(context)
+                                                                                .textTheme
+                                                                                .titleLarge!
+                                                                                .copyWith(fontWeight: FontWeight.bold),
+                                                                            overflow: TextOverflow.ellipsis,
+                                                                          ),
+                                                                        if (currentItem.description != null)
+                                                                          Text(
+                                                                            currentItem.description!,
+                                                                            style:
+                                                                                Theme.of(context).textTheme.bodyLarge,
+                                                                            overflow: TextOverflow.ellipsis,
+                                                                          ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            );
+                                                          },
+                                                        );
+                                                      } else {
+                                                        final item = widget.playlist[index - 1];
+                                                        return ListenableBuilder(
+                                                          listenable: this.index,
+                                                          builder: (context, _) {
+                                                            return ListTile(
+                                                              dense: true,
+                                                              contentPadding: const EdgeInsets.symmetric(
+                                                                horizontal: 16,
+                                                              ),
+                                                              leading: AspectRatio(
+                                                                aspectRatio: 1,
+                                                                child: Center(
+                                                                  child: Container(
+                                                                    clipBehavior: Clip.antiAlias,
+                                                                    decoration: BoxDecoration(
+                                                                      borderRadius: const BorderRadius.all(
+                                                                        Radius.circular(2),
+                                                                      ),
+                                                                      color: Theme.of(context).colorScheme.surface,
+                                                                    ),
+                                                                    child:
+                                                                        item.poster != null
+                                                                            ? CachedNetworkImage(imageUrl: item.poster!)
+                                                                            : const SizedBox.expand(
                                                                               child: Icon(
                                                                                 Icons.movie_creation_outlined,
                                                                               ),
                                                                             ),
-                                                                    ),
                                                                   ),
-                                                                ),
-                                                                const SizedBox(width: 24),
-                                                                Expanded(
-                                                                  child: Column(
-                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                    children: [
-                                                                      if (currentItem.title != null)
-                                                                        Text(
-                                                                          currentItem.title!,
-                                                                          style: Theme.of(context).textTheme.titleLarge!
-                                                                              .copyWith(fontWeight: FontWeight.bold),
-                                                                          overflow: TextOverflow.ellipsis,
-                                                                        ),
-                                                                      if (currentItem.description != null)
-                                                                        Text(
-                                                                          currentItem.description!,
-                                                                          style: Theme.of(context).textTheme.bodyLarge,
-                                                                          overflow: TextOverflow.ellipsis,
-                                                                        ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          );
-                                                        },
-                                                      );
-                                                    } else {
-                                                      final item = widget.playlist[index - 1];
-                                                      return ListenableBuilder(
-                                                        listenable: this.index,
-                                                        builder: (context, _) {
-                                                          return ListTile(
-                                                            dense: true,
-                                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                                            leading: AspectRatio(
-                                                              aspectRatio: 1,
-                                                              child: Center(
-                                                                child: Container(
-                                                                  clipBehavior: Clip.antiAlias,
-                                                                  decoration: BoxDecoration(
-                                                                    borderRadius: const BorderRadius.all(
-                                                                      Radius.circular(2),
-                                                                    ),
-                                                                    color: Theme.of(context).colorScheme.surface,
-                                                                  ),
-                                                                  child: item.poster != null
-                                                                      ? CachedNetworkImage(imageUrl: item.poster!)
-                                                                      : const SizedBox.expand(
-                                                                          child: Icon(Icons.movie_creation_outlined),
-                                                                        ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                            title: Text(item.title ?? ''),
-                                                            subtitle: Text(item.description ?? ''),
-                                                            trailing: index - 1 == this.index.value
-                                                                ? const Icon(Icons.play_circle_rounded)
-                                                                : null,
-                                                            onTap: () => next(index - 1),
-                                                          );
-                                                        },
-                                                      );
-                                                    }
-                                                  },
-                                                  itemCount: widget.playlist.length + 1,
+                                                              title: Text(item.title ?? ''),
+                                                              subtitle: Text(item.description ?? ''),
+                                                              trailing:
+                                                                  index - 1 == this.index.value
+                                                                      ? const Icon(Icons.play_circle_rounded)
+                                                                      : null,
+                                                              onTap: () => next(index - 1),
+                                                            );
+                                                          },
+                                                        );
+                                                      }
+                                                    },
+                                                    itemCount: widget.playlist.length + 1,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
                                     );
                                   },
                                 ),
@@ -294,45 +307,53 @@ class _PlayerCastState<T> extends State<PlayerCast<T>> {
                                   children: [
                                     ListenableBuilder(
                                       listenable: index,
-                                      builder: (context, child) => isFirst
-                                          ? const IconButton(onPressed: null, icon: Icon(null, size: 32))
-                                          : child!,
+                                      builder:
+                                          (context, child) =>
+                                              isFirst
+                                                  ? const IconButton(onPressed: null, icon: Icon(null, size: 32))
+                                                  : child!,
                                       child: IconButton(
                                         onPressed: () => next(index.value - 1),
                                         icon: const Icon(Icons.skip_previous_rounded, size: 32),
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () async =>
-                                          device.seek(_controller.position - const Duration(seconds: 30)),
+                                      onPressed:
+                                          () async => device.seek(_controller.position - const Duration(seconds: 30)),
                                       icon: const Icon(Icons.fast_rewind_rounded, size: 32),
                                     ),
                                     const SizedBox(width: 12),
                                     ListenableBuilder(
                                       listenable: isPlaying,
-                                      builder: (context, _) => IconButton(
-                                        onPressed: () {
-                                          if (isPlaying.value) {
-                                            device.pause();
-                                          } else {
-                                            device.play();
-                                          }
-                                          isPlaying.value = !isPlaying.value;
-                                        },
-                                        icon: Icon(isPlaying.value ? Icons.pause : Icons.play_arrow_rounded, size: 36),
-                                      ),
+                                      builder:
+                                          (context, _) => IconButton(
+                                            onPressed: () {
+                                              if (isPlaying.value) {
+                                                device.pause();
+                                              } else {
+                                                device.play();
+                                              }
+                                              isPlaying.value = !isPlaying.value;
+                                            },
+                                            icon: Icon(
+                                              isPlaying.value ? Icons.pause : Icons.play_arrow_rounded,
+                                              size: 36,
+                                            ),
+                                          ),
                                     ),
                                     const SizedBox(width: 12),
                                     IconButton(
-                                      onPressed: () async =>
-                                          device.seek(_controller.position + const Duration(seconds: 30)),
+                                      onPressed:
+                                          () async => device.seek(_controller.position + const Duration(seconds: 30)),
                                       icon: const Icon(Icons.fast_forward_rounded, size: 32),
                                     ),
                                     ListenableBuilder(
                                       listenable: index,
-                                      builder: (context, child) => isLast
-                                          ? const IconButton(onPressed: null, icon: Icon(null, size: 32))
-                                          : child!,
+                                      builder:
+                                          (context, child) =>
+                                              isLast
+                                                  ? const IconButton(onPressed: null, icon: Icon(null, size: 32))
+                                                  : child!,
                                       child: IconButton(
                                         onPressed: () => next(index.value + 1),
                                         icon: const Icon(Icons.skip_next_rounded, size: 32),
@@ -343,11 +364,12 @@ class _PlayerCastState<T> extends State<PlayerCast<T>> {
                               ),
                               FutureBuilder(
                                 future: device.getVolume(),
-                                builder: (context, snapshot) => PlayerVolume(
-                                  key: ValueKey(snapshot.data),
-                                  initialVolume: snapshot.data ?? 0,
-                                  onUpdate: (volume) => device.setVolume(volume),
-                                ),
+                                builder:
+                                    (context, snapshot) => PlayerVolume(
+                                      key: ValueKey(snapshot.data),
+                                      initialVolume: snapshot.data ?? 0,
+                                      onUpdate: (volume) => device.setVolume(volume),
+                                    ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(16),
@@ -462,9 +484,10 @@ class _PlayerArtwork<T extends PlaylistItemDisplay<dynamic>> extends StatelessWi
                 ],
               ),
               clipBehavior: Clip.antiAlias,
-              child: item.poster != null
-                  ? CachedNetworkImage(imageUrl: item.poster!, fit: BoxFit.cover)
-                  : const SizedBox.expand(child: Icon(Icons.movie_creation_outlined, size: 96)),
+              child:
+                  item.poster != null
+                      ? CachedNetworkImage(imageUrl: item.poster!, fit: BoxFit.cover)
+                      : const SizedBox.expand(child: Icon(Icons.movie_creation_outlined, size: 96)),
             );
           },
         ),
@@ -571,7 +594,7 @@ class PlayerCastSearcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: StreamBuilder(
-        stream: cast.discover(),
+        stream: cast.discover().scan<List<CastDevice>>((acc, cur, _) => acc..add(cur), []),
         builder: (context, snapshot) {
           if (snapshot.data?.isNotEmpty ?? false) {
             return SizedBox(
@@ -596,11 +619,7 @@ class PlayerCastSearcher extends StatelessWidget {
           } else if (snapshot.connectionState != ConnectionState.done) {
             return const Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()),
-                ),
-              ],
+              children: [Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))],
             );
           } else {
             return Padding(
@@ -656,15 +675,17 @@ class _BlurredBackgroundState extends State<BlurredBackground> with SingleTicker
             curve: Curves.easeIn,
             child: AnimatedBuilder(
               animation: _controller,
-              builder: (context, child) => Transform(
-                transform: transform(),
-                alignment: Alignment.center,
-                filterQuality: FilterQuality.high,
-                child: child,
-              ),
-              child: snapshot.hasData
-                  ? snapshot.requireData
-                  : Container(color: widget.defaultColor ?? Theme.of(context).colorScheme.surface),
+              builder:
+                  (context, child) => Transform(
+                    transform: transform(),
+                    alignment: Alignment.center,
+                    filterQuality: FilterQuality.high,
+                    child: child,
+                  ),
+              child:
+                  snapshot.hasData
+                      ? snapshot.requireData
+                      : Container(color: widget.defaultColor ?? Theme.of(context).colorScheme.surface),
             ),
           );
         },
@@ -732,10 +753,7 @@ class _BlurredBackgroundState extends State<BlurredBackground> with SingleTicker
     if (context != null) {
       child = InheritedTheme.captureAll(
         context,
-        MediaQuery(
-          data: MediaQuery.of(context),
-          child: Material(color: Colors.transparent, child: child),
-        ),
+        MediaQuery(data: MediaQuery.of(context), child: Material(color: Colors.transparent, child: child)),
       );
     }
 
