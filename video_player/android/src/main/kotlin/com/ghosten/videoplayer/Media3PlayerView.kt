@@ -58,7 +58,7 @@ class Media3PlayerView(
     private var extensionRendererMode: Int?,
     private var enableDecoderFallback: Boolean?,
     private var language: String?,
-    subtitleStyle: List<Int>?,
+    private var subtitleStyle: List<Int>?,
     private val width: Int?,
     private val height: Int?,
     private val top: Int?,
@@ -80,15 +80,13 @@ class Media3PlayerView(
     private var thumbnailThread: ThumbnailThread = ThumbnailThread()
     private var isFullscreen = width == null && height == null
     private var lastStatus: String = "idle"
+    private var subtitleTextScale = subtitleScaleFromStyle(subtitleStyle)
 
     init {
         mRootView.addView(mNativeView, 0)
         thumbnailThread.start()
         createNotificationChannel()
         player = initPlayer()
-        if (subtitleStyle?.size == 4) {
-            setSubtitleStyle(subtitleStyle)
-        }
         fullscreen(false)
         mediaSession = MediaSession.Builder(context, player).build()
         checkPlaybackPosition(1000)
@@ -182,7 +180,7 @@ class Media3PlayerView(
     }
 
     private fun initPlayer(): ExoPlayer {
-        val subtitleParserFactory = SsaSubtitleParserFactory()
+        val subtitleParserFactory = SsaSubtitleParserFactory(subtitleTextScale)
         val dataSourceFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
         val player = ExoPlayer.Builder(context)
             .setRenderersFactory(
@@ -219,6 +217,7 @@ class Media3PlayerView(
         player.addListener(this)
         player.addAnalyticsListener(EventLogger())
         mNativeView.findViewById<androidx.media3.ui.PlayerView>(R.id.video_view).player = player
+        applySubtitleStyle()
         return player
     }
 
@@ -734,10 +733,27 @@ class Media3PlayerView(
     }
 
     override fun setSubtitleStyle(style: List<Int>) {
-        if (style.size != 4) return
+        if (style.size < 4) return
+        val newTextScale = subtitleScaleFromStyle(style)
+        val textScaleChanged = newTextScale != subtitleTextScale
+        subtitleStyle = style
+        subtitleTextScale = newTextScale
+        if (textScaleChanged && mPlaylist.isNotEmpty()) {
+            resetPlayer()
+        } else {
+            applySubtitleStyle()
+        }
+    }
+
+    private fun applySubtitleStyle() {
+        val style = subtitleStyle ?: return
+        if (style.size < 4) return
         val playerView = mNativeView.findViewById<androidx.media3.ui.PlayerView>(R.id.video_view)
         val subtitle =
             playerView.findViewById<androidx.media3.ui.SubtitleView>(androidx.media3.ui.R.id.exo_subtitles)
+        subtitle.setFractionalTextSize(
+            androidx.media3.ui.SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleTextScale
+        )
         subtitle.setStyle(
             CaptionStyleCompat(
                 style[0],

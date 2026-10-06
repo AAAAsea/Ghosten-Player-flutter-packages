@@ -26,6 +26,7 @@ class MPVPlayerView(
     private val mChannel: MethodChannel,
     private val hwdec: Boolean? = true,
     language: String?,
+    subtitleStyle: List<Int>?,
     private val width: Int?,
     private val height: Int?,
     private val top: Int?,
@@ -54,6 +55,7 @@ class MPVPlayerView(
     private var seeking: Boolean = false
     private var videoAspectRatio: Double = 1.0
     private var isFullscreen = width == null && height == null
+    private var subtitleTextScale = subtitleScaleFromStyle(subtitleStyle)
 
     init {
         if (mpvLibsDownloaded(version)) {
@@ -131,6 +133,7 @@ class MPVPlayerView(
         MPVLib.setOptionString("demuxer-max-bytes", "${cacheMegs * 1024 * 1024}")
         MPVLib.setOptionString("demuxer-max-back-bytes", "${cacheMegs * 1024 * 1024}")
         MPVLib.setOptionString("sub-back-color", "#000000")
+        MPVLib.setOptionString("sub-scale", subtitleTextScale.toString())
 
         MPVLib.setOptionString("vd-lavc-film-grain", "cpu")
     }
@@ -379,6 +382,8 @@ class MPVPlayerView(
     }
 
     override fun setSubtitleStyle(style: List<Int>) {
+        subtitleTextScale = subtitleScaleFromStyle(style)
+        MPVLib.setPropertyDouble("sub-scale", subtitleTextScale.toDouble())
     }
 
     override fun eventProperty(property: String) {

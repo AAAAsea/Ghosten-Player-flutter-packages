@@ -37,4 +37,11 @@ class SsaSubtitleParserFactoryTest {
 
         assertEquals("playresx : 384\nPLAYRESY:\t288\n", sanitizeSsaHeader(header))
     }
+
+    @Test
+    fun readsPersistedSubtitleScaleAndSupportsLegacySettings() {
+        assertEquals(0.8f, subtitleScaleFromStyle(listOf(1, 2, 3, 4, 80)))
+        assertEquals(1f, subtitleScaleFromStyle(listOf(1, 2, 3, 4)))
+        assertEquals(1f, subtitleScaleFromStyle(listOf(1, 2, 3, 4, Int.MAX_VALUE)))
+    }
 }

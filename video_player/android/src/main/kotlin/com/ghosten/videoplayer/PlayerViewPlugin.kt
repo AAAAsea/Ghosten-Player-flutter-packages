@@ -66,6 +66,7 @@ class PlayerViewPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activit
                                             mChannel,
                                             true,
                                             call.argument("language"),
+                                            call.argument("subtitleStyle"),
                                             call.argument("width"),
                                             call.argument("height"),
                                             call.argument("top"),

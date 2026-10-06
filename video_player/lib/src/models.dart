@@ -332,23 +332,44 @@ class SubtitleSettings extends Equatable {
     required this.backgroundColor,
     required this.windowColor,
     required this.edgeColor,
+    this.fontScalePercent = 100,
   });
 
   SubtitleSettings.fromJson(List<int> json)
     : foregroundColor = Color(json[0]),
       backgroundColor = Color(json[1]),
       windowColor = Color(json[2]),
-      edgeColor = Color(json[3]);
+      edgeColor = Color(json[3]),
+      fontScalePercent = json.length > 4 && json[4] >= 50 && json[4] <= 200 ? json[4] : 100;
   final Color foregroundColor;
   final Color backgroundColor;
   final Color windowColor;
   final Color edgeColor;
+  final int fontScalePercent;
+
+  SubtitleSettings copyWith({
+    Color? foregroundColor,
+    Color? backgroundColor,
+    Color? windowColor,
+    Color? edgeColor,
+    int? fontScalePercent,
+  }) {
+    return SubtitleSettings(
+      foregroundColor: foregroundColor ?? this.foregroundColor,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      windowColor: windowColor ?? this.windowColor,
+      edgeColor: edgeColor ?? this.edgeColor,
+      fontScalePercent: fontScalePercent ?? this.fontScalePercent,
+    );
+  }
 
   List<int> toJson() {
-    // ignore: deprecated_member_use
-    return [foregroundColor, backgroundColor, windowColor, edgeColor].map((c) => c.value).toList();
+    return [
+      ...[foregroundColor, backgroundColor, windowColor, edgeColor].map((c) => c.toARGB32()),
+      fontScalePercent,
+    ];
   }
 
   @override
-  List<Object?> get props => [foregroundColor, backgroundColor, windowColor, edgeColor];
+  List<Object?> get props => [foregroundColor, backgroundColor, windowColor, edgeColor, fontScalePercent];
 }

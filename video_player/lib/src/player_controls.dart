@@ -302,6 +302,7 @@ class PlayerLocalizations extends InheritedWidget {
     required this.extensionRendererModeLabel,
     required this.playerShowThumbnails,
     required this.subtitleSetting,
+    required this.subtitleSettingFontSize,
     required this.subtitleSettingExample,
     required this.subtitleSettingForegroundColor,
     required this.subtitleSettingBackgroundColor,
@@ -327,6 +328,7 @@ class PlayerLocalizations extends InheritedWidget {
   final String extensionRendererModeLabel;
   final String playerShowThumbnails;
   final String subtitleSetting;
+  final String subtitleSettingFontSize;
   final String subtitleSettingExample;
   final String subtitleSettingForegroundColor;
   final String subtitleSettingBackgroundColor;
@@ -1256,6 +1258,7 @@ class _PlayerSubtitleSettingsState extends State<PlayerSubtitleSettings> {
   late Color _backgroundColor = widget.subtitleSettings.backgroundColor;
   late Color _windowColor = widget.subtitleSettings.windowColor;
   late Color _edgeColor = widget.subtitleSettings.edgeColor;
+  late int _fontScalePercent = widget.subtitleSettings.fontScalePercent;
 
   @override
   Widget build(BuildContext context) {
@@ -1292,7 +1295,7 @@ class _PlayerSubtitleSettingsState extends State<PlayerSubtitleSettings> {
                     Text(
                       localizations.subtitleSettingExample,
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 24 * _fontScalePercent / 100,
                         backgroundColor: _backgroundColor,
                         foreground: Paint()
                           ..style = PaintingStyle.stroke
@@ -1300,10 +1303,27 @@ class _PlayerSubtitleSettingsState extends State<PlayerSubtitleSettings> {
                           ..color = _edgeColor,
                       ),
                     ),
-                    Text(localizations.subtitleSettingExample, style: TextStyle(fontSize: 24, color: _foregroundColor)),
+                    Text(
+                      localizations.subtitleSettingExample,
+                      style: TextStyle(fontSize: 24 * _fontScalePercent / 100, color: _foregroundColor),
+                    ),
                   ],
                 ),
               ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: ListTile(
+              title: Text(localizations.subtitleSettingFontSize),
+              subtitle: Slider(
+                value: _fontScalePercent.toDouble(),
+                min: 60,
+                max: 140,
+                divisions: 8,
+                label: '$_fontScalePercent%',
+                onChanged: (value) => setState(() => _fontScalePercent = value.round()),
+              ),
+              trailing: Text('$_fontScalePercent%'),
             ),
           ),
           SliverToBoxAdapter(
@@ -1359,6 +1379,7 @@ class _PlayerSubtitleSettingsState extends State<PlayerSubtitleSettings> {
                       backgroundColor: _backgroundColor,
                       windowColor: _windowColor,
                       edgeColor: _edgeColor,
+                      fontScalePercent: _fontScalePercent,
                     );
                     Navigator.of(context).pop(style.toJson());
                   },
