@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'config.dart';
 import 'models.dart';
 import 'player_platform_interface.dart';
 
@@ -53,7 +56,10 @@ class PlayerController<T> implements PlayerBaseController {
           bufferedPosition.value = Duration(milliseconds: (call.arguments as num).toInt());
         case 'tracksChanged':
           final tracks = (call.arguments as List<dynamic>).map(MediaTrack.fromJson).toList();
-          trackGroup.value = MediaTrackGroup.fromTracks(tracks);
+          final group = MediaTrackGroup.fromTracks(tracks);
+          trackGroup.value = group;
+          await _restoreTrackPreference('audio', group.audio, group.selectedAudio);
+          await _restoreTrackPreference('sub', group.sub, group.selectedSub);
         case 'error':
           error.value = call.arguments;
         case 'fatalError':
@@ -212,9 +218,42 @@ class PlayerController<T> implements PlayerBaseController {
     return PlayerPlatform.instance.setPlaybackSpeed(speed);
   }
 
-  Future<void> setTrack(String type, String? id) {
+  Future<void> setTrack(String type, String? id) async {
     if (id == 'null') id = null;
-    return PlayerPlatform.instance.setTrack(type, id);
+    if (type == 'audio' || type == 'sub') {
+      final tracks = type == 'audio' ? trackGroup.value.audio : trackGroup.value.sub;
+      final track = tracks.firstWhereOrNull((track) => track.id == id);
+      final preference = id == null
+          ? TrackPreference.disabled()
+          : track == null
+          ? null
+          : TrackPreference.fromTrack(track);
+      if (preference != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await PlayerConfig.setTrackPreference(prefs, type, preference);
+      }
+    }
+    await PlayerPlatform.instance.setTrack(type, id);
+  }
+
+  Future<void> _restoreTrackPreference(String type, List<MediaTrack> tracks, dynamic selectedId) async {
+    if (tracks.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final preference = PlayerConfig.getTrackPreference(prefs, type);
+    if (preference == null) return;
+
+    if (preference.disabled) {
+      if (selectedId != null) {
+        await PlayerPlatform.instance.setTrack(type, null);
+      }
+      return;
+    }
+
+    final track = preference.match(tracks);
+    if (track != null && track.id != selectedId) {
+      await PlayerPlatform.instance.setTrack(type, track.id);
+    }
   }
 
   Future<bool?> requestPip() {
