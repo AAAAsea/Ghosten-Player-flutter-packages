@@ -33,6 +33,7 @@ import androidx.media3.exoplayer.source.BehindLiveWindowException
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import androidx.media3.exoplayer.upstream.Loader
+import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -181,6 +182,8 @@ class Media3PlayerView(
     }
 
     private fun initPlayer(): ExoPlayer {
+        val subtitleParserFactory = SsaSubtitleParserFactory()
+        val dataSourceFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
         val player = ExoPlayer.Builder(context)
             .setRenderersFactory(
                 DefaultRenderersFactory(context)
@@ -192,9 +195,10 @@ class Media3PlayerView(
                     .forceEnableMediaCodecAsynchronousQueueing()
             )
             .setMediaSourceFactory(
-                DefaultMediaSourceFactory(context).setDataSourceFactory(
-                    DefaultDataSource.Factory(context, httpDataSourceFactory)
-                )
+                DefaultMediaSourceFactory(
+                    dataSourceFactory,
+                    DefaultExtractorsFactory().setSubtitleParserFactory(subtitleParserFactory),
+                ).setSubtitleParserFactory(subtitleParserFactory)
             )
             .setSeekParameters(SeekParameters(3000000, 3000000))
             .build()
