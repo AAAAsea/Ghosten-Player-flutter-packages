@@ -33,6 +33,10 @@ run its native unit tests.
 - Track preferences are stored by descriptive metadata, with track id only as
   a last-resort fallback.
 - Selecting “None” for subtitles is a persisted preference.
+- Subtitle font scale is persisted as the fifth integer in the subtitle style
+  payload. Four-value legacy settings migrate to `100%` without data loss.
+- Media3 scales embedded cue sizes and its default cue size; MPV receives the
+  same value through `sub-scale`.
 - Unsupported tracks must not be selected automatically.
 - SSA headers with non-positive `PlayResX` or `PlayResY` are normalized to the
   conventional ASS fallback resolution `384 × 288`; valid headers must remain
