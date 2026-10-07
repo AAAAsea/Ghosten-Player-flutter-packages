@@ -35,8 +35,15 @@ run its native unit tests.
 - Selecting “None” for subtitles is a persisted preference.
 - Subtitle font scale is persisted as the fifth integer in the subtitle style
   payload. Four-value legacy settings migrate to `100%` without data loss.
+- Subtitle bottom padding is persisted as the sixth integer. `-1` keeps the
+  renderer default; values from `0` through `50` represent a percentage of the
+  viewport height. Four- and five-value payloads migrate to `-1`.
 - Media3 scales embedded cue sizes and its default cue size; MPV receives the
   same value through `sub-scale`.
+- Media3 maps subtitle position to `SubtitleView` bottom padding. MPV maps the
+  same value to `sub-pos` and receives the persisted text, background, and edge
+  colors. Explicitly positioned ASS cues remain authored-layout content on
+  Media3.
 - Unsupported tracks must not be selected automatically.
 - SSA headers with non-positive `PlayResX` or `PlayResY` are normalized to the
   conventional ASS fallback resolution `384 × 288`; valid headers must remain
