@@ -41,8 +41,10 @@ class TrackPreference {
 
     final ranked = supported
         .map(
-          (track) =>
-              (track: track, score: _score(track, normalizedLabel: normalizedLabel, normalizedName: normalizedName)),
+          (track) => (
+            track: track,
+            score: _score(track, normalizedLabel: normalizedLabel, normalizedName: normalizedName),
+          ),
         )
         .sorted((a, b) => b.score.compareTo(a.score));
 
@@ -124,7 +126,7 @@ class PlayerConfig {
 
   static List<int> getSubtitleSettings(SharedPreferences prefs) {
     return prefs.getString('playerConfig.subtitleSettings')?.split(',').map(int.parse).toList() ??
-        [0xFFFFFFFF, 0xFF000000, 0, 0, 100];
+        SubtitleSettings.defaultSettings.toJson();
   }
 
   static void setSubtitleSettings(SharedPreferences prefs, List<int> settings) {

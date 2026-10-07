@@ -11,19 +11,28 @@ void main() {
     final settings = SubtitleSettings.fromJson(const [0xFFFFFFFF, 0xFF000000, 0, 0]);
 
     expect(settings.fontScalePercent, 100);
-    expect(settings.toJson(), const [0xFFFFFFFF, 0xFF000000, 0, 0, 100]);
+    expect(settings.bottomPaddingPercent, -1);
+    expect(settings.toJson(), const [0xFFFFFFFF, 0xFF000000, 0, 0, 100, -1]);
   });
 
-  test('font scale round-trips with subtitle colors', () {
+  test('font scale and position round-trip with subtitle colors', () {
     const settings = SubtitleSettings(
       foregroundColor: Colors.white,
       backgroundColor: Colors.black,
       windowColor: Colors.transparent,
       edgeColor: Colors.black,
       fontScalePercent: 80,
+      bottomPaddingPercent: 20,
     );
 
     expect(SubtitleSettings.fromJson(settings.toJson()), settings);
+  });
+
+  test('legacy five-value settings keep the renderer default position', () {
+    final settings = SubtitleSettings.fromJson(const [0xFFFFFFFF, 0xFF000000, 0, 0, 80]);
+
+    expect(settings.fontScalePercent, 80);
+    expect(settings.bottomPaddingPercent, -1);
   });
 
   test('invalid persisted font scale falls back to 100 percent', () {
@@ -32,10 +41,16 @@ void main() {
     expect(settings.fontScalePercent, 100);
   });
 
-  test('new installs receive a five-value default subtitle configuration', () async {
+  test('invalid persisted position falls back to the renderer default', () {
+    final settings = SubtitleSettings.fromJson(const [0xFFFFFFFF, 0xFF000000, 0, 0, 100, 75]);
+
+    expect(settings.bottomPaddingPercent, -1);
+  });
+
+  test('new installs receive a six-value default subtitle configuration', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
-    expect(PlayerConfig.getSubtitleSettings(prefs), const [0xFFFFFFFF, 0xFF000000, 0, 0, 100]);
+    expect(PlayerConfig.getSubtitleSettings(prefs), const [0xFFFFFFFF, 0xFF000000, 0, 0, 100, -1]);
   });
 }

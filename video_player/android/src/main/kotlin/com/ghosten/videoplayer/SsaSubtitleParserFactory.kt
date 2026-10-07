@@ -73,6 +73,11 @@ internal fun subtitleScaleFromStyle(style: List<Int>?): Float {
     return percent / 100f
 }
 
+internal fun subtitleBottomPaddingFromStyle(style: List<Int>?): Float? {
+    val percent = style?.getOrNull(5)?.takeIf { it in 0..50 } ?: return null
+    return percent / 100f
+}
+
 internal fun sanitizeSsaHeader(header: String): String =
     replaceInvalidPlayResolution(
         replaceInvalidPlayResolution(header, "PlayResX", 384),

@@ -333,6 +333,7 @@ class SubtitleSettings extends Equatable {
     required this.windowColor,
     required this.edgeColor,
     this.fontScalePercent = 100,
+    this.bottomPaddingPercent = -1,
   });
 
   SubtitleSettings.fromJson(List<int> json)
@@ -340,12 +341,22 @@ class SubtitleSettings extends Equatable {
       backgroundColor = Color(json[1]),
       windowColor = Color(json[2]),
       edgeColor = Color(json[3]),
-      fontScalePercent = json.length > 4 && json[4] >= 50 && json[4] <= 200 ? json[4] : 100;
+      fontScalePercent = json.length > 4 && json[4] >= 50 && json[4] <= 200 ? json[4] : 100,
+      bottomPaddingPercent = json.length > 5 && json[5] >= 0 && json[5] <= 50 ? json[5] : -1;
+
+  static const defaultSettings = SubtitleSettings(
+    foregroundColor: Colors.white,
+    backgroundColor: Colors.black,
+    windowColor: Colors.transparent,
+    edgeColor: Colors.transparent,
+  );
+
   final Color foregroundColor;
   final Color backgroundColor;
   final Color windowColor;
   final Color edgeColor;
   final int fontScalePercent;
+  final int bottomPaddingPercent;
 
   SubtitleSettings copyWith({
     Color? foregroundColor,
@@ -353,6 +364,7 @@ class SubtitleSettings extends Equatable {
     Color? windowColor,
     Color? edgeColor,
     int? fontScalePercent,
+    int? bottomPaddingPercent,
   }) {
     return SubtitleSettings(
       foregroundColor: foregroundColor ?? this.foregroundColor,
@@ -360,6 +372,7 @@ class SubtitleSettings extends Equatable {
       windowColor: windowColor ?? this.windowColor,
       edgeColor: edgeColor ?? this.edgeColor,
       fontScalePercent: fontScalePercent ?? this.fontScalePercent,
+      bottomPaddingPercent: bottomPaddingPercent ?? this.bottomPaddingPercent,
     );
   }
 
@@ -367,9 +380,17 @@ class SubtitleSettings extends Equatable {
     return [
       ...[foregroundColor, backgroundColor, windowColor, edgeColor].map((c) => c.toARGB32()),
       fontScalePercent,
+      bottomPaddingPercent,
     ];
   }
 
   @override
-  List<Object?> get props => [foregroundColor, backgroundColor, windowColor, edgeColor, fontScalePercent];
+  List<Object?> get props => [
+    foregroundColor,
+    backgroundColor,
+    windowColor,
+    edgeColor,
+    fontScalePercent,
+    bottomPaddingPercent,
+  ];
 }

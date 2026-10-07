@@ -44,4 +44,24 @@ class SsaSubtitleParserFactoryTest {
         assertEquals(1f, subtitleScaleFromStyle(listOf(1, 2, 3, 4)))
         assertEquals(1f, subtitleScaleFromStyle(listOf(1, 2, 3, 4, Int.MAX_VALUE)))
     }
+
+    @Test
+    fun readsPersistedSubtitlePositionAndSupportsLegacySettings() {
+        assertEquals(0.2f, subtitleBottomPaddingFromStyle(listOf(1, 2, 3, 4, 100, 20)))
+        assertEquals(null, subtitleBottomPaddingFromStyle(listOf(1, 2, 3, 4, 100)))
+        assertEquals(null, subtitleBottomPaddingFromStyle(listOf(1, 2, 3, 4, 100, -1)))
+        assertEquals(null, subtitleBottomPaddingFromStyle(listOf(1, 2, 3, 4, 100, 75)))
+    }
+
+    @Test
+    fun mapsSubtitleStyleToMpvColorsAndPosition() {
+        val options = mpvSubtitleStyleOptions(
+            listOf(0xFFFFFFFF.toInt(), 0xB3000000.toInt(), 0, 0xFF000000.toInt(), 100, 20)
+        )
+
+        assertEquals("#FFFFFFFF", options["sub-color"])
+        assertEquals("#B3000000", options["sub-back-color"])
+        assertEquals("#FF000000", options["sub-border-color"])
+        assertEquals("80.0", options["sub-pos"])
+    }
 }

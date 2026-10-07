@@ -81,6 +81,7 @@ class Media3PlayerView(
     private var isFullscreen = width == null && height == null
     private var lastStatus: String = "idle"
     private var subtitleTextScale = subtitleScaleFromStyle(subtitleStyle)
+    private var subtitleBottomPadding = subtitleBottomPaddingFromStyle(subtitleStyle)
 
     init {
         mRootView.addView(mNativeView, 0)
@@ -738,6 +739,7 @@ class Media3PlayerView(
         val textScaleChanged = newTextScale != subtitleTextScale
         subtitleStyle = style
         subtitleTextScale = newTextScale
+        subtitleBottomPadding = subtitleBottomPaddingFromStyle(style)
         if (textScaleChanged && mPlaylist.isNotEmpty()) {
             resetPlayer()
         } else {
@@ -753,6 +755,9 @@ class Media3PlayerView(
             playerView.findViewById<androidx.media3.ui.SubtitleView>(androidx.media3.ui.R.id.exo_subtitles)
         subtitle.setFractionalTextSize(
             androidx.media3.ui.SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * subtitleTextScale
+        )
+        subtitle.setBottomPaddingFraction(
+            subtitleBottomPadding ?: androidx.media3.ui.SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION
         )
         subtitle.setStyle(
             CaptionStyleCompat(
